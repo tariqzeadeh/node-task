@@ -1,5 +1,5 @@
-import { sequelize } from "../database.mjs";
-import { userSchema } from "../schemas/userSchema.mjs";
+import { sequelize } from "../database";
+import { userSchema } from "../schemas/userSchema";
 
 export const userModel = sequelize.define(
   "user",

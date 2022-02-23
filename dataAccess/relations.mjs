@@ -1,5 +1,5 @@
-import { userModel } from "../dataAccess/models/userModel.mjs";
-import { postModel } from "../dataAccess/models/postModel.mjs";
+import { userModel } from "../dataAccess/models/userModel";
+import { postModel } from "../dataAccess/models/postModel";
 
 userModel.hasMany(postModel, {
   foreignKey: "userId",

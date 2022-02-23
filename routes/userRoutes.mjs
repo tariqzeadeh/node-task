@@ -1,5 +1,5 @@
 import expressRouter from "express-async-router";
-import userRepo from "../dataAccess/repositories/userRoutesRepo.mjs";
+import userRepo from "../dataAccess/repositories/userRoutesRepo";
 const {
   getAllUsers,
   addUser,

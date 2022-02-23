@@ -1,7 +1,7 @@
-import { sequelize } from "../database.mjs";
-import { commentSchema } from "../schemas/commentSchema.mjs";
-import { postModel } from "./postModel.mjs";
-// import { userModel } from "./userModel.mjs";
+import { sequelize } from "../database";
+import { commentSchema } from "../schemas/commentSchema";
+import { postModel } from "./postModel";
+// import { userModel } from "./userModel";
 
 export const commentModel = sequelize.define(
   "comment",

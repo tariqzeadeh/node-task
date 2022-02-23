@@ -1,5 +1,5 @@
 import expressRouter from "express-async-router";
-import postHandlers from "../dataAccess/repositories/postRoutesRepo.mjs";
+import postHandlers from "../dataAccess/repositories/postRoutesRepo";
 const {
   addUserPost,
   getAllPosts,
@@ -20,4 +20,4 @@ postRouter.get("/all-user-post", getAllUserPosts);
 postRouter.put("/update-post", updateUserPost);
 postRouter.delete("/delete-post", deleteUserPost);
 postRouter.delete("/delete-all-posts", deleteAllPost);
-postRouter.delete("/delete-all-comments-on-post", deleteAllCommentsOnPost);
+postRouter.delete("/post/delete-all-comments", deleteAllCommentsOnPost);

@@ -1,13 +1,12 @@
 import express from "express";
 import cors from "cors";
-import { sequelize } from "./dataAccess/database.mjs";
-import { config } from "dotenv";
-import { postModel } from "./dataAccess/models/postModel.mjs";
-import { userModel } from "./dataAccess/models/userModel.mjs";
-import { commentModel } from "./dataAccess/models/commentModel.mjs";
-import { userRouter, postRouter, commentRouter } from "./routes/index.mjs";
-config();
-const app = express();
+import { sequelize } from "./dataAccess/database";
+import { postModel } from "./dataAccess/models/postModel";
+import { userModel } from "./dataAccess/models/userModel";
+import { commentModel } from "./dataAccess/models/commentModel";
+import { userRouter, postRouter, commentRouter } from "./routes/index";
+
+export const app = express();
 app.use(express.json());
 app.use(cors());
 

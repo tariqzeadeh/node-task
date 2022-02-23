@@ -1,8 +1,10 @@
 {
+  "main": "index",
   "scripts": {
-    "test": "nyc mocha dotenv_config_path=tests/.env.test",
-    "start": "node -r esm -r app.mjs",
-    "lint": "eslint -c .eslintrc.yml --ext .mjs,.js ."
+    "test": "nyc mocha --watch",
+    "start": "node -r esm -r dotenv/config index",
+    "lint": "eslint -c .eslintrc.yml --ext ,.js .",
+    "coverage": "nyc --reporter=lcov --reporter=text npm run test"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -11,8 +13,17 @@
     "express": "^4.17.2",
     "express-async-router": "^0.1.15",
     "express-router": "^0.0.1",
+    "nyc": "^15.1.0",
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.16.1"
+  },
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "chai-as-promised": "^7.1.1",
+    "chai-http": "^4.3.0",
+    "mocha": "^8.4.0",
+    "mochawesome": "^7.0.1",
+    "sinon": "^13.0.1"
   }
 }
