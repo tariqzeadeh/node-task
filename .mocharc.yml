@@ -1,0 +1,9 @@
+require:
+  - esm
+spec: './tests/**/*.spec.js'
+color: true
+reporter: 'mochawesome'
+# reporter-options: 'reportFilename=index'
+timeout: 50000
+recursive: true
+exit: true

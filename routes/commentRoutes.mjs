@@ -1,5 +1,5 @@
 import expressRouter from "express-async-router";
-import commentHandlers from "../dataAccess/repositories/commentRoutesRepo.mjs";
+import commentHandlers from "../dataAccess/repositories/commentRoutesRepo";
 const {
   addComment,
   getUserComment,
@@ -15,7 +15,7 @@ export const commentRouter = new expressRouter.AsyncRouter();
 
 commentRouter.get("/", getAllComments);
 commentRouter.get("/user-comment", getUserComment);
-commentRouter.get("/all-user-comment", getAllUserComment);
+commentRouter.get("/all-user-comments", getAllUserComment);
 commentRouter.post("/new-comment", addComment);
 commentRouter.put("/update-comment", updateUserComment);
 commentRouter.delete("/delete-comment", deleteUserComment);

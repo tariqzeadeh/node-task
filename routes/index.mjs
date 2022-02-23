@@ -1,3 +1,3 @@
-export * from './userRoutes.mjs';
-export * from './postRoutes.mjs';
-export * from './commentRoutes.mjs';
+export * from './userRoutes';
+export * from './postRoutes';
+export * from './commentRoutes';

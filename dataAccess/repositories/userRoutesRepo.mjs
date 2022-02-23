@@ -1,10 +1,9 @@
-import { userModel } from "../models/userModel.mjs";
-import { postModel } from "../models/postModel.mjs";
-import { commentModel } from "../models/commentModel.mjs";
+import { userModel } from "../models/userModel";
+import { postModel } from "../models/postModel";
+import { commentModel } from "../models/commentModel";
 // import Sequelize from "sequelize";
 // const { Op } = Sequelize;
 export default {
-
   getAllUsers: async (req, res) => {
     // const { q } = req.query;
     // let filter = {};
@@ -25,14 +24,13 @@ export default {
       if (users.length !== 0) {
         return res.json(users);
       } else {
-        return res.status(404).send();
+        return res.status(404).send("NO Users Found");
       }
     } catch (err) {
       console.log(err);
     }
   },
 
- 
   getUser: async (req, res) => {
     const { id } = req.params;
     try {
@@ -48,7 +46,6 @@ export default {
       console.log(err);
     }
   },
-
 
   updateUser: async (req, res) => {
     const { id } = req.params;
@@ -96,18 +93,23 @@ export default {
       console.log(err);
     }
   },
-  
+
   addUser: async (req, res) => {
     const { firstName, lastName, email, role } = req.body;
+    const validation = firstName && lastName && email && role;
     console.log(`first: ${firstName} == last: ${lastName}`);
     try {
-      const newUser = await userModel.create({
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        role: role,
-      });
-      return res.json(newUser);
+      if (!validation) {
+        return res.status(404).send("Some thing went wrong");
+      } else {
+        const newUser = await userModel.create({
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          role: role,
+        });
+        return res.json(newUser);
+      }
     } catch (err) {
       console.log(err);
     }

@@ -1,6 +1,6 @@
-import { sequelize } from "../database.mjs";
-import { postSchema } from "../schemas/postSchema.mjs";
-import { userModel } from "./userModel.mjs";
+import { sequelize } from "../database";
+import { postSchema } from "../schemas/postSchema";
+import { userModel } from "./userModel";
 
 export const postModel = sequelize.define(
   "post",

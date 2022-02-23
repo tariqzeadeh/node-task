@@ -1,18 +1,25 @@
-import { postModel } from "../models/postModel.mjs";
-import { userModel } from "../models/userModel.mjs";
-import { commentModel } from "../models/commentModel.mjs";
+import { postModel } from "../models/postModel";
+import { userModel } from "../models/userModel";
+import { commentModel } from "../models/commentModel";
 
 export default {
-  
   addUserPost: async (req, res) => {
     const { userId, body } = req.body;
+    const validation = userId && body;
     try {
-      const user = await userModel.findByPk(userId);
-      if (user) {
-        const newPost = await postModel.create({ userId: userId, body: body });
-        return res.json(newPost);
+      if (!validation) {
+        return res.status(404).json({ message: "Something went wrong" });
       } else {
-        return res.status(404).send("User Not Found");
+        const user = await userModel.findByPk(userId);
+        if (user) {
+          const newPost = await postModel.create({
+            userId: userId,
+            body: body,
+          });
+          return res.json(newPost);
+        } else {
+          return res.status(404).json({ message: "User Not Found" });
+        }
       }
     } catch (err) {
       console.log(err);
@@ -27,7 +34,7 @@ export default {
       if (allPosts.length !== 0) {
         return res.json(allPosts);
       } else {
-        return res.status(404).send("No Posts Found");
+        return res.status(404).json({ message: "No Posts Found" });
       }
     } catch (err) {
       console.log(err);
@@ -36,20 +43,25 @@ export default {
 
   getUserPost: async (req, res) => {
     const { id, userId } = req.body;
+    const validation = id && userId;
     try {
-      const user = await userModel.findByPk(userId);
-      if (user) {
-        const post = await postModel.findOne({
-          where: { id: id, userId: userId },
-          include: [{ model: commentModel }],
-        });
-        if (post) {
-          return res.json(post);
-        } else {
-          return res.status(404).send("Post Not Found");
-        }
+      if (!validation) {
+        return res.status(404).json({ message: "Something went wrong" });
       } else {
-        return res.status(404).send("User Not Found");
+        const user = await userModel.findByPk(userId);
+        if (user) {
+          const post = await postModel.findOne({
+            where: { id: id, userId: userId },
+            include: [{ model: commentModel }],
+          });
+          if (post) {
+            return res.json(post);
+          } else {
+            return res.status(404).json({ message: "Post Not Found" });
+          }
+        } else {
+          return res.status(404).send({ message: "User Not Found" });
+        }
       }
     } catch (err) {
       console.log(err);
@@ -68,10 +80,10 @@ export default {
         if (posts.length !== 0) {
           return res.json(posts);
         } else {
-          return res.status(404).send("The user dont have posts");
+          return res.status(404).json({ message: "The user dont have posts" });
         }
       } else {
-        return res.status(404).send("User Not Found");
+        return res.status(404).send({ message: "User Not Found" });
       }
     } catch (err) {
       console.log(err);
@@ -80,21 +92,26 @@ export default {
 
   updateUserPost: async (req, res) => {
     const { id, userId, body } = req.body;
+    const validation = id && userId && body;
     try {
-      const user = await userModel.findByPk(userId);
-      if (user) {
-        const post = await postModel.findOne({
-          where: { id: id, userId: userId },
-        });
-        if (post) {
-          post.body = body;
-          post.save();
-          return res.json(post);
-        } else {
-          return res.status(404).send("Post Not Found");
-        }
+      if (!validation) {
+        return res.status(404).json({ message: "Something went wrong" });
       } else {
-        return res.status(404).send("User Not Found");
+        const user = await userModel.findByPk(userId);
+        if (user) {
+          const post = await postModel.findOne({
+            where: { id: id, userId: userId },
+          });
+          if (post) {
+            post.body = body;
+            post.save();
+            return res.json(post);
+          } else {
+            return res.status(404).json({ message: "Post Not Found" });
+          }
+        } else {
+          return res.status(404).send({ message: "User Not Found" });
+        }
       }
     } catch (err) {
       console.log(err);
@@ -103,21 +120,28 @@ export default {
 
   deleteUserPost: async (req, res) => {
     const { id, userId } = req.body;
+    const validation = id && userId;
     try {
-      const user = await userModel.findByPk(userId);
-      if (user) {
-        const post = await postModel.findOne({
-          where: { id: id, userId: userId },
-        });
-        if (post) {
-          commentModel.destroy({ where: { postId: id } });
-          post.destroy();
-          return res.json("Post successfully deleted");
-        } else {
-          return res.status(404).send("Post Not Found");
-        }
+      if (!validation) {
+        return res.status(404).json({ message: "Something went wrong" });
       } else {
-        return res.status(404).send("User Not Found");
+        const user = await userModel.findByPk(userId);
+        if (user) {
+          const post = await postModel.findOne({
+            where: { id: id, userId: userId },
+          });
+          if (post) {
+            commentModel.destroy({ where: { postId: id } });
+            post.destroy();
+            return res
+              .status(200)
+              .json({ message: "Post successfully deleted" });
+          } else {
+            return res.status(404).json({ message: "Post Not Found" });
+          }
+        } else {
+          return res.status(404).json({ message: "User Not Found" });
+        }
       }
     } catch (err) {
       console.log(err);
@@ -137,12 +161,14 @@ export default {
             commentModel.destroy({ where: { postId: post.id } });
             post.destroy();
           });
-          return res.json("All posts successfully deleted");
+          return res.json({ message: "All posts successfully deleted" });
         } else {
-          return res.status(404).send("The User Dont Have Any Post Yet");
+          return res
+            .status(404)
+            .json({ message: "The User Dont Have Any Post Yet" });
         }
       } else {
-        return res.status(404).send("User Not Found");
+        return res.status(404).json({ message: "User Not Found" });
       }
     } catch (err) {
       console.log(err);
@@ -154,10 +180,21 @@ export default {
     try {
       const post = await postModel.findByPk(postId);
       if (post) {
-        commentModel.destroy({ where: { postId: postId } });
-        return res.json("All comments on the post are successfully deleted");
+        const comments = await commentModel.findAll({ where: { postId: postId } });
+        if (comments.length !== 0) {
+          await commentModel.destroy({ where: { postId: postId } });
+          return res.status(200).json({
+            message: "All comments on the post are successfully deleted",
+          });
+        } else {
+          return res.status(404).json({
+            message: "No comments found on this post",
+          });
+        }
       } else {
-        return res.status(404).send("The User Dont Have Any Post Yet");
+        return res
+          .status(404)
+          .json({ message: "Post Not Found" });
       }
     } catch (err) {
       console.log(err);
