@@ -2,6 +2,8 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import { app } from "../../index";
 import { truncate } from "../helpers/truncate";
+import { signUp } from "../helpers/auth-sign-up";
+import jwt from "jsonwebtoken";
 import { userModel } from "../../dataAccess/models/userModel";
 import { postModel } from "../../dataAccess/models/postModel";
 import { commentModel } from "../../dataAccess/models/commentModel";
@@ -16,22 +18,26 @@ describe("DELETE /comments/delete-comment", () => {
     secondPost,
     firstComment,
     secondComment,
-    requester;
+    requester,
+    firstUserJwtToken,
+    secondUserJwtToken;
 
   before(async () => {
-    firstUser = await userModel.create({
-      firstName: "Tareq",
-      lastName: "Zeadeh",
+    firstUserJwtToken = await signUp({
+      name: "Tareq Zeadeh",
       email: "Tareq@email.com",
-      role: "admin",
+      password: "Tareq",
+      role: "Admin",
     });
+    firstUser = jwt.decode(firstUserJwtToken);
 
-    secondUser = await userModel.create({
-      firstName: "Odai",
-      lastName: "Zeadeh",
-      email: "Tareq@email.com",
-      role: "admin",
+    secondUserJwtToken = await signUp({
+      name: "Odai Zeadeh",
+      email: "Odai@email.com",
+      password: "Odai",
+      role: "User",
     });
+    secondUser = jwt.decode(secondUserJwtToken);
 
     firstPost = await postModel.create({
       userId: firstUser.id,
@@ -68,48 +74,61 @@ describe("DELETE /comments/delete-comment", () => {
   });
 
   describe("DELETE /comments/delete-all-comments-from-post", async () => {
-
     it("should DELETE a comment with the givin id", async () => {
-      const res = await requester.delete("/comments/delete-all-comments-from-post").send({
-        userId: secondUser.id,
-        postId: firstPost.id,
-      });
+      const res = await requester
+        .delete("/comments/delete-all-comments-from-post")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
+        .send({
+          userId: secondUser.id,
+          postId: firstPost.id,
+        });
 
       res.should.have.status(200);
-      res.body.message.should.equal("All comments successfully deleted")
-
+      res.body.message.should.equal("All comments successfully deleted");
     });
   });
 
   describe("DELETE /comments/delete-all-comments-from-post", async () => {
-
     it("should return 404 code if the deleted comment has missing fields", async () => {
-      const res = await requester.delete("/comments/delete-all-comments-from-post").send({
-        userId: secondUser.id,
-      });
+      const res = await requester
+        .delete("/comments/delete-all-comments-from-post")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
+        .send({
+          userId: secondUser.id,
+        });
 
       res.should.have.status(404);
       res.body.message.should.equal("Something went wrong");
 
       const allPostComments = await commentModel.findAll({
         where: {
-          postId: firstPost.id
-        }
-      })
+          postId: firstPost.id,
+        },
+      });
 
       allPostComments.length.should.equal(0);
     });
 
     it("should return 404 code if the comment not found in database", async () => {
-        await truncate(commentModel);
-        const res = await requester.delete("/comments/delete-all-comments-from-post").send({
+      await truncate(commentModel);
+      const res = await requester
+        .delete("/comments/delete-all-comments-from-post")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
+        .send({
           userId: secondUser.id,
-          postId: firstPost.id
+          postId: firstPost.id,
         });
-  
-        res.should.have.status(404);
-        res.body.message.should.equal("The user dont have comments on the specified post");
-  
-      });
+
+      res.should.have.status(404);
+      res.body.message.should.equal(
+        "The user dont have comments on the specified post"
+      );
+    });
   });
 });

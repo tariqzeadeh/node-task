@@ -1,8 +1,10 @@
 import expressRouter from "express-async-router";
 import userRepo from "../dataAccess/repositories/userRoutesRepo";
+import  authentication from '../middleware/authMiddleware.mjs'
+const { authenticateToken } = authentication;
 const {
   getAllUsers,
-  addUser,
+  // addUser,
   getUser,
   updateUser,
   deleteUser,
@@ -10,8 +12,8 @@ const {
 
 export const userRouter = new expressRouter.AsyncRouter();
 
-userRouter.get("/", getAllUsers);
-userRouter.get("/user/:id", getUser);
-userRouter.post("/new-user", addUser);
-userRouter.put("/update-user/:id", updateUser);
-userRouter.delete("/delete-user/:id", deleteUser);
+userRouter.get("/", authenticateToken, getAllUsers);
+userRouter.get("/user/:id", authenticateToken, getUser);
+// userRouter.post("/new-user", authenticateToken, addUser);
+userRouter.put("/update-user", authenticateToken, updateUser);
+userRouter.delete("/delete-user", authenticateToken, deleteUser);

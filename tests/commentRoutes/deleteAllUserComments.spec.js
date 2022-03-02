@@ -2,6 +2,8 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import { app } from "../../index";
 import { truncate } from "../helpers/truncate";
+import { signUp } from "../helpers/auth-sign-up";
+import jwt from "jsonwebtoken";
 import { userModel } from "../../dataAccess/models/userModel";
 import { postModel } from "../../dataAccess/models/postModel";
 import { commentModel } from "../../dataAccess/models/commentModel";
@@ -16,22 +18,26 @@ describe("DELETE /comments/delete-comment", () => {
     secondPost,
     firstComment,
     secondComment,
-    requester;
+    requester,
+    firstUserJwtToken,
+    secondUserJwtToken;
 
   before(async () => {
-    firstUser = await userModel.create({
-      firstName: "Tareq",
-      lastName: "Zeadeh",
+    firstUserJwtToken = await signUp({
+      name: "Tareq Zeadeh",
       email: "Tareq@email.com",
-      role: "admin",
+      password: "Tareq",
+      role: "Admin",
     });
+    firstUser = jwt.decode(firstUserJwtToken);
 
-    secondUser = await userModel.create({
-      firstName: "Odai",
-      lastName: "Zeadeh",
-      email: "Tareq@email.com",
-      role: "admin",
+    secondUserJwtToken = await signUp({
+      name: "Odai Zeadeh",
+      email: "Odai@email.com",
+      password: "Odai",
+      role: "User",
     });
+    secondUser = jwt.decode(secondUserJwtToken);
 
     firstPost = await postModel.create({
       userId: firstUser.id,
@@ -68,40 +74,49 @@ describe("DELETE /comments/delete-comment", () => {
   });
 
   describe("DELETE /comments/delete-all-comments", async () => {
-
     it("should DELETE a comments with the givin id", async () => {
-      const res = await requester.delete("/comments/delete-all-comments").send({
-        userId: secondUser.id,
-      });
+      const res = await requester
+        .delete("/comments/delete-all-comments")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
+        .send({
+          userId: secondUser.id,
+        });
 
       res.should.have.status(200);
-      res.body.message.should.equal("All comments successfully deleted")
-
+      res.body.message.should.equal("All comments successfully deleted");
     });
   });
 
   describe("DELETE /comments/delete-all-comments", async () => {
-
     it("should return 404 code if the user not found in database", async () => {
-        const res = await requester.delete("/comments/delete-all-comments").send({
+      const res = await requester
+        .delete("/comments/delete-all-comments")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
+        .send({
           userId: 3,
         });
-  
-        res.should.have.status(404);
-        res.body.message.should.equal("User Not Found");
-  
-      });
-    
+
+      res.should.have.status(404);
+      res.body.message.should.equal("User Not Found");
+    });
 
     it("should return 404 code if the comments not found in database", async () => {
-        await truncate(commentModel);
-        const res = await requester.delete("/comments/delete-all-comments").send({
+      await truncate(commentModel);
+      const res = await requester
+        .delete("/comments/delete-all-comments")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
+        .send({
           userId: secondUser.id,
         });
-  
-        res.should.have.status(404);
-        res.body.message.should.equal("The user dont have comments");
-  
-      });
+
+      res.should.have.status(404);
+      res.body.message.should.equal("The user dont have comments");
+    });
   });
 });

@@ -1,5 +1,7 @@
 import expressRouter from "express-async-router";
 import postHandlers from "../dataAccess/repositories/postRoutesRepo";
+import  authentication from '../middleware/authMiddleware.mjs';
+const { authenticateToken } = authentication;
 const {
   addUserPost,
   getAllPosts,
@@ -13,11 +15,11 @@ const {
 
 export const postRouter = new expressRouter.AsyncRouter();
 
-postRouter.get("/", getAllPosts);
-postRouter.post("/new-post", addUserPost);
-postRouter.get("/post", getUserPost);
-postRouter.get("/all-user-post", getAllUserPosts);
-postRouter.put("/update-post", updateUserPost);
-postRouter.delete("/delete-post", deleteUserPost);
-postRouter.delete("/delete-all-posts", deleteAllPost);
-postRouter.delete("/post/delete-all-comments", deleteAllCommentsOnPost);
+postRouter.get("/", authenticateToken, getAllPosts);
+postRouter.post("/new-post", authenticateToken, addUserPost);
+postRouter.get("/post", authenticateToken, getUserPost);
+postRouter.get("/all-user-post", authenticateToken, getAllUserPosts);
+postRouter.put("/update-post", authenticateToken, updateUserPost);
+postRouter.delete("/delete-post", authenticateToken, deleteUserPost);
+postRouter.delete("/delete-all-posts", authenticateToken, deleteAllPost);
+postRouter.delete("/post/delete-all-comments", authenticateToken, deleteAllCommentsOnPost);

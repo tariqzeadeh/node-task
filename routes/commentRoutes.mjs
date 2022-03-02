@@ -1,5 +1,7 @@
 import expressRouter from "express-async-router";
 import commentHandlers from "../dataAccess/repositories/commentRoutesRepo";
+import  authentication from '../middleware/authMiddleware.mjs';
+const { authenticateToken } = authentication;
 const {
   addComment,
   getUserComment,
@@ -13,12 +15,12 @@ const {
 
 export const commentRouter = new expressRouter.AsyncRouter();
 
-commentRouter.get("/", getAllComments);
-commentRouter.get("/user-comment", getUserComment);
-commentRouter.get("/all-user-comments", getAllUserComment);
-commentRouter.post("/new-comment", addComment);
-commentRouter.put("/update-comment", updateUserComment);
-commentRouter.delete("/delete-comment", deleteUserComment);
+commentRouter.get("/", authenticateToken, getAllComments);
+commentRouter.get("/user-comment", authenticateToken, getUserComment);
+commentRouter.get("/all-user-comments", authenticateToken, getAllUserComment);
+commentRouter.post("/new-comment", authenticateToken, addComment);
+commentRouter.put("/update-comment", authenticateToken, updateUserComment);
+commentRouter.delete("/delete-comment", authenticateToken, deleteUserComment);
 commentRouter.delete(
   "/delete-all-comments-from-post",
   deleteAllUserCommentsFromPost
