@@ -2,6 +2,8 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import { app } from "../../index";
 import { truncate } from "../helpers/truncate";
+import { signUp } from "../helpers/auth-sign-up";
+import jwt from "jsonwebtoken";
 import { userModel } from "../../dataAccess/models/userModel";
 import { postModel } from "../../dataAccess/models/postModel";
 
@@ -9,15 +11,18 @@ chai.use(chaiHttp);
 chai.should();
 
 describe("GET /users/post", () => {
-  let user, firstPost, secondPost, requester;
+  let user, firstPost, secondPost, requester, firstUser, firstUserJwtToken;
 
   before(async () => {
-    user = await userModel.create({
-      firstName: "Tareq",
-      lastName: "Zeadeh",
+    firstUser = {
+      name: "Tareq Zeadeh",
       email: "Tareq@email.com",
-      role: "admin",
-    });
+      password: "Tareq",
+      role: "Admin",
+    };
+
+    firstUserJwtToken = await signUp(firstUser);
+    user = jwt.decode(firstUserJwtToken);
 
     firstPost = await postModel.create({
       userId: user.id,
@@ -42,7 +47,12 @@ describe("GET /users/post", () => {
 
   describe("GET /posts/post", async () => {
     it("should GET a post with the id (1) in database", async () => {
-      const res = await requester.get("/posts/post").send({ id: 1, userId: 1 });
+      const res = await requester
+        .get("/posts/post")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
+        .send({ id: 1, userId: 1 });
 
       res.should.have.status(200);
       res.body.should.be.a("object");
@@ -53,23 +63,37 @@ describe("GET /users/post", () => {
   });
 
   describe("GET /posts/post", async () => {
-    
     it("should return 404 code with post id is not found in the database", async () => {
-      const res = await requester.get("/posts/post").send({ id: 3, userId: 1 });
+      const res = await requester
+        .get("/posts/post")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
+        .send({ id: 3, userId: 1 });
 
       res.should.have.status(404);
       res.body.message.should.equal("Post Not Found");
     });
 
     it("should return 404 code with user id is not found in the database", async () => {
-      const res = await requester.get("/posts/post").send({ id: 1, userId: 2 });
+      const res = await requester
+        .get("/posts/post")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
+        .send({ id: 1, userId: 2 });
 
       res.should.have.status(404);
       res.body.message.should.equal("User Not Found");
     });
 
     it("should return 404 code with user id is not found in the database", async () => {
-      const res = await requester.get("/posts/post").send({ userId: 1 });
+      const res = await requester
+        .get("/posts/post")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
+        .send({ userId: 1 });
 
       res.should.have.status(404);
       res.body.message.should.equal("Something went wrong");

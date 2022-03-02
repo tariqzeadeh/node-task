@@ -2,30 +2,34 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import { app } from "../../index";
 import { truncate } from "../helpers/truncate";
+import { signUp } from "../helpers/auth-sign-up";
 import { userModel } from "../../dataAccess/models/userModel";
 
 chai.use(chaiHttp);
 chai.should();
 
 describe("GET /users", () => {
-  let firstUser, secondUser, requester;
+  let firstUser, secondUser, requester, firstUserJwtToken, secondUserJwtToken;
 
   before(async () => {
-    firstUser = await userModel.create({
-      firstName: "Tareq",
-      lastName: "Zeadeh",
+    firstUser = {
+      name: "Tareq Zeadeh",
       email: "Tareq@email.com",
-      role: "admin",
-    });
-    secondUser = await userModel.create({
-      firstName: "Hasan",
-      lastName: "Zeadeh",
+      password: "Tareq",
+      role: "Admin",
+    };
+    secondUser = {
+      name: "Hasan Zeadeh",
       email: "Hasan@email.com",
-      role: "admin",
-    });
+      password: "Hasan",
+      role: "User",
+    };
 
     requester = chai.request(app).keepOpen();
     console.log("Test Started");
+
+    firstUserJwtToken = await signUp(firstUser);
+    secondUserJwtToken = await signUp(secondUser);
   });
 
   after(async () => {
@@ -35,20 +39,22 @@ describe("GET /users", () => {
   });
 
   describe("GET /users", () => {
-     it('should GET all users',async () =>{
-        const res = await requester.get('/users');
-        res.should.have.status(200);
-        res.body.should.be.an('array');
-        res.body.length.should.equal(2);    
-     })
-
+    it("should GET all users", async () => {
+      const res = await requester
+        .get("/users")
+        .set({ Authorization: "Bearer " + firstUserJwtToken });
+      res.should.have.status(200);
+      res.body.should.be.an("array");
+      res.body.length.should.equal(2);
+    });
   });
 
   describe("GET /users", () => {
-    it('should NOT GET any user (wrong url)',async () =>{
-       const res = await requester.get('/user');
-       res.should.have.status(404);    
-    })
-
- });
+    it("should NOT GET any user (empty database)", async () => {
+      await truncate(userModel);
+      const res = await requester.get("/users").set({ Authorization: "Bearer " + firstUserJwtToken });;
+      res.should.have.status(404);
+      res.body.message.should.equal('NO Users Found');
+    });
+  });
 });

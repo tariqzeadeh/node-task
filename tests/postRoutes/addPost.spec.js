@@ -2,6 +2,8 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import { app } from "../../index";
 import { truncate } from "../helpers/truncate";
+import { signUp } from "../helpers/auth-sign-up";
+import jwt from "jsonwebtoken";
 import { userModel } from "../../dataAccess/models/userModel";
 import { postModel } from "../../dataAccess/models/postModel";
 
@@ -9,18 +11,21 @@ chai.use(chaiHttp);
 chai.should();
 
 describe("POST /users/new-post", () => {
-  let user, requester;
+  let firstUser, requester, firstUserJwtToken;
 
   before(async () => {
-    user = await userModel.create({
-      firstName: "Tareq",
-      lastName: "Zeadeh",
+    firstUser = {
+      name: "Tareq Zeadeh",
       email: "Tareq@email.com",
-      role: "admin",
-    });
+      password: "Tareq",
+      role: "Admin",
+    };
 
     requester = chai.request(app).keepOpen();
     console.log("Test Started");
+
+    firstUserJwtToken = await signUp(firstUser);
+    console.log(`firstUserJwtToken: ${firstUserJwtToken}`);
   });
 
   after(async () => {
@@ -32,8 +37,12 @@ describe("POST /users/new-post", () => {
 
   describe("POST /posts/new-post", async () => {
     it("should POST (add) a new post in database", async () => {
+      const user = jwt.decode(firstUserJwtToken);
       const res = await requester
         .post("/posts/new-post")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
         .send({ userId: user.id, body: "Hi" });
 
       res.body.should.be.a("object");
@@ -45,8 +54,12 @@ describe("POST /users/new-post", () => {
 
   describe("POST /posts/new-post", async () => {
     it("should return 404 code if new post data has some missing fields (body)", async () => {
+      const user = jwt.decode(firstUserJwtToken);
       const res = await requester
         .post("/posts/new-post")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
         .send({ userId: user.id });
 
       res.should.have.status(404);
@@ -56,6 +69,9 @@ describe("POST /users/new-post", () => {
     it("should return 404 code if the user id is not found in the database", async () => {
       const res = await requester
         .post("/posts/new-post")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
         .send({ userId: 2, body: "hallo" });
 
       res.should.have.status(404);

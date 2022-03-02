@@ -1,30 +1,18 @@
 import { userModel } from "../models/userModel";
 import { postModel } from "../models/postModel";
 import { commentModel } from "../models/commentModel";
-// import Sequelize from "sequelize";
-// const { Op } = Sequelize;
+import bcrypt from "bcrypt";
 export default {
   getAllUsers: async (req, res) => {
-    // const { q } = req.query;
-    // let filter = {};
-    // if (q) {
-    //   filter = {
-    //     where: {
-    //       firstName: {
-    //         [Op.like]: `${q}%`,
-    //       },
-    //     },
-    //     include: [{ model: postModel }],
-    //   };
-    // }
     try {
       const users = await userModel.findAll({
         include: [{ model: postModel }],
+        attributes: ["id", "name", "email", "role"],
       });
       if (users.length !== 0) {
         return res.json(users);
       } else {
-        return res.status(404).send("NO Users Found");
+        return res.status(404).json({ message: "NO Users Found" });
       }
     } catch (err) {
       console.log(err);
@@ -36,6 +24,7 @@ export default {
     try {
       const user = await userModel.findByPk(id, {
         include: [{ model: postModel }],
+        attributes: ["id", "name", "email", "role"],
       });
       if (user) {
         return res.json(user);
@@ -48,16 +37,19 @@ export default {
   },
 
   updateUser: async (req, res) => {
-    const { id } = req.params;
-    const { firstName, lastName, email, role } = req.body;
+    const { id, name, email, password, role } = req.body;
     console.log("updateUserHandler");
     try {
       const user = await userModel.findByPk(id);
+      console.log(user);
       if (user) {
-        user.firstName = firstName;
-        user.lastName = lastName;
-        user.email = email;
-        user.role = role;
+        const hashedPassword = password
+          ? await passwordEncryption(password)
+          : user.password;
+        user.name = name || user.name;
+        user.email = email || user.email;
+        user.password = hashedPassword;
+        user.role = role || user.role;
         await user.save();
         return res.json(user);
       } else {
@@ -70,15 +62,15 @@ export default {
 
   deleteUser: async (req, res) => {
     console.log("deleteUserHandler");
-    const { id } = req.params;
+    const { id } = req.body;
     try {
       const user = await userModel.findByPk(id);
       if (user) {
         await commentModel.destroy({ where: { userId: id } });
         const posts = await postModel.findAll({ where: { userId: id } });
         if (posts.length !== 0) {
-          posts.forEach((post) => {
-            commentModel.destroy({ where: { postId: post.id } });
+          posts.forEach(async (post) => {
+            await commentModel.destroy({ where: { postId: post.id } });
           });
           await postModel.destroy({ where: { userId: id } });
         }
@@ -94,24 +86,30 @@ export default {
     }
   },
 
-  addUser: async (req, res) => {
-    const { firstName, lastName, email, role } = req.body;
-    const validation = firstName && lastName && email && role;
-    console.log(`first: ${firstName} == last: ${lastName}`);
-    try {
-      if (!validation) {
-        return res.status(404).send("Some thing went wrong");
-      } else {
-        const newUser = await userModel.create({
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          role: role,
-        });
-        return res.json(newUser);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  },
+  // addUser: async (req, res) => {
+  //   const { name, email, password, role } = req.body;
+  //   const validation = name && email && password && role;
+  //   try {
+  //     if (!validation) {
+  //       return res.status(404).send("Some thing went wrong");
+  //     } else {
+  //       const newUser = await userModel.create({
+  //         name: name,
+  //         email: email,
+  //         password: password,
+  //         role: role,
+  //       });
+  //       return res.json(newUser);
+  //     }
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // },
+};
+
+const passwordEncryption = async (password) => {
+  const salt = await bcrypt.genSalt();
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  return hashedPassword;
 };

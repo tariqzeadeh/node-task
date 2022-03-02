@@ -2,6 +2,8 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import { app } from "../../index";
 import { truncate } from "../helpers/truncate";
+import { signUp } from "../helpers/auth-sign-up";
+import jwt from "jsonwebtoken";
 import { userModel } from "../../dataAccess/models/userModel";
 import { postModel } from "../../dataAccess/models/postModel";
 import { commentModel } from "../../dataAccess/models/commentModel";
@@ -10,22 +12,31 @@ chai.use(chaiHttp);
 chai.should();
 
 describe("DELETE /posts/delete-all-posts", () => {
-  let firstUser, secondUser, firstPost, firstComment, secondComment, requester;
+  let firstUser,
+    secondUser,
+    firstPost,
+    firstComment,
+    secondComment,
+    requester,
+    firstUserJwtToken,
+    secondUserJwtToken;
 
   before(async () => {
-    firstUser = await userModel.create({
-      firstName: "Tareq",
-      lastName: "Zeadeh",
+    firstUserJwtToken = await signUp({
+      name: "Tareq Zeadeh",
       email: "Tareq@email.com",
-      role: "admin",
+      password: "Tareq",
+      role: "Admin",
     });
+    firstUser = jwt.decode(firstUserJwtToken);
 
-    secondUser = await userModel.create({
-      firstName: "Odai",
-      lastName: "Zeadeh",
-      email: "Tareq@email.com",
-      role: "admin",
+    secondUserJwtToken = await signUp({
+      name: "Odai Zeadeh",
+      email: "Odai@email.com",
+      password: "Odai",
+      role: "User",
     });
+    secondUser = jwt.decode(secondUserJwtToken);
 
     firstPost = await postModel.create({
       userId: firstUser.id,
@@ -60,6 +71,9 @@ describe("DELETE /posts/delete-all-posts", () => {
     it("should DELETE all the comments on the post of id (1)", async () => {
       const res = await requester
         .delete("/posts/post/delete-all-comments")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
         .send({ postId: firstPost.id });
 
       res.should.have.status(200);
@@ -71,9 +85,11 @@ describe("DELETE /posts/delete-all-posts", () => {
 
   describe("DELETE /posts/post/delete-all-comments", async () => {
     it("should return 404 code if the user do not have the post with id (2)", async () => {
-
       const res = await requester
         .delete("/posts/post/delete-all-comments")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
         .send({ postId: 2 });
 
       res.should.have.status(404);
@@ -85,6 +101,9 @@ describe("DELETE /posts/delete-all-posts", () => {
 
       const res = await requester
         .delete("/posts/post/delete-all-comments")
+        .set({
+          Authorization: "Bearer " + firstUserJwtToken,
+        })
         .send({ postId: firstPost.id });
 
       res.should.have.status(404);
