@@ -9,14 +9,26 @@ export const commentSchema = {
     autoIncrement: true,
   },
   userId: {
-    field: "userId",
+    field: "user_Id",
     type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+    onDelete: 'cascade',
+    onUpdate: 'cascade',
   },
   postId:{
     field: "post_id",
     type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: 'posts',
+      key: 'id',
+    },
+    onDelete: 'cascade',
+    onUpdate: 'cascade',
   },
   body: {
     field: "body",
