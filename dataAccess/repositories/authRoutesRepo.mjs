@@ -8,7 +8,7 @@ export default {
     if (user) {
       return {
         error: {
-          status: 400,
+          status: 200,
           message: "This Email Is Already Used",
         },
       };
@@ -46,7 +46,7 @@ export default {
     if (!user) {
       return {
         error: {
-          status: 400,
+          status: 200,
           message: "User Not Found, Check Your Email",
         },
       };
@@ -67,7 +67,7 @@ export default {
       } else {
         return {
           error: {
-            status: 403,
+            status: 200,
             message: "Wrong Password",
           },
         };

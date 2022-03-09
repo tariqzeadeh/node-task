@@ -58,9 +58,11 @@ export default {
       const post = await postModel.findOne({
         where: { id: id },
       });
-      post.body = body;
-      post.save();
-      return post;
+      if (post) {
+        post.body = body;
+        post.save();
+      }
+      return post ? post : {};
     } catch (err) {
       console.log(err);
     }
@@ -92,7 +94,7 @@ export default {
       console.log(err);
     }
   },
-  
+
   deleteOne: async (id) => {
     try {
       await postModel.destroy({ where: { id: id } });

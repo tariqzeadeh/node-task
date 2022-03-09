@@ -30,7 +30,7 @@ export default {
     try {
       const user = await userModel.findByPk(id);
       if (user) {
-        const hashedPassword = password
+        const hashedPassword = password !== "same"
           ? await passwordEncryption(password)
           : user.password;
         user.name = name || user.name;

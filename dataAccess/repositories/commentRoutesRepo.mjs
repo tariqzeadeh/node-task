@@ -70,7 +70,7 @@ export default {
     }
   },
 
-  updates: async (id, body) => {
+  update: async (id, body) => {
     try {
       const userComment = await commentModel.findOne({
         where: { id: id },
