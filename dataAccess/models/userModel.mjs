@@ -2,7 +2,7 @@ import { sequelize } from "../database";
 import { userSchema } from "../schemas/userSchema";
 
 export const userModel = sequelize.define(
-  "user",
+  "users",
   userSchema,
   {
     underscored: true,

@@ -3,7 +3,7 @@ import { postSchema } from "../schemas/postSchema";
 import { userModel } from "./userModel";
 
 export const postModel = sequelize.define(
-  "post",
+  "posts",
   postSchema,
   {
     underscored: true,
